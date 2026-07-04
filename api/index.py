@@ -117,7 +117,6 @@ def send_rsvp_dm(user_id):
         print(f"RSVP DM error: {e.response['error']}")
 
 
-@app.route("/", methods=["GET", "POST"])
 def send_unknown_dm(user_id):
     try:
         dm = user_client.conversations_open(users=user_id)
@@ -137,6 +136,10 @@ def send_unknown_dm(user_id):
         )
     except SlackApiError as e:
         print(f"Unknown command DM error: {e.response['error']}")
+
+
+# --- Crucial Fix: The decorator must belong to the event handler function ---
+@app.route("/", methods=["GET", "POST"])
 def slack_events():
     if request.method == "GET":
         return jsonify({"status": "Selfbot server is running smoothly!"}), 200
@@ -178,3 +181,6 @@ def slack_events():
                 threading.Thread(target=send_unknown_dm, args=(user_id,)).start()
 
     return jsonify({"status": "ok"}), 200
+
+if __name__ == "__main__":
+    app.run(port=3000)
