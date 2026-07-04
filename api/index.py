@@ -46,20 +46,29 @@ def send_welcome_message(user_id, channel_id):
     except SlackApiError as e:
         print(f"Error sending message: {e.response['error']}")
 @app.route("/", methods=["POST"])
+@app.route("/", methods=["GET", "POST"])  
+
 def slack_events():
+
+    if request.method == "GET":
+        return jsonify({"status": "Selfbot server is running smoothly!"}), 200
+
     data = request.json
     
-    if "challenge" in data:
+    if data and "challenge" in data:
         return jsonify({"challenge": data["challenge"]})
     
-    if "event" in data:
+    if data and "event" in data:
         event = data["event"]
         event_type = event.get("type")
-
+        
         if event_type == "member_joined_channel":
             user_id = event.get("user")
             channel_id = event.get("channel")
+            
             threading.Thread(
-                target=send_welcome_message, args=(user_id, channel_id)
-                ).start()
+                target=send_welcome_message, 
+                args=(user_id, channel_id)
+            ).start()
+            
     return jsonify({"status": "ok"}), 200
