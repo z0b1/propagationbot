@@ -118,6 +118,25 @@ def send_rsvp_dm(user_id):
 
 
 @app.route("/", methods=["GET", "POST"])
+def send_unknown_dm(user_id):
+    try:
+        dm = user_client.conversations_open(users=user_id)
+        dm_channel_id = dm["channel"]["id"]
+        user_client.chat_postMessage(
+            channel=dm_channel_id,
+            text="That frequency is not on my spectrum.",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "📡 That frequency is not on my spectrum.\n\nTry `help` to see what I can do!"
+                    }
+                }
+            ]
+        )
+    except SlackApiError as e:
+        print(f"Unknown command DM error: {e.response['error']}")
 def slack_events():
     if request.method == "GET":
         return jsonify({"status": "Selfbot server is running smoothly!"}), 200
@@ -154,5 +173,8 @@ def slack_events():
 
             elif text in ["rsvp", "!rsvp", "website"]:
                 threading.Thread(target=send_rsvp_dm, args=(user_id,)).start()
+
+            elif text.startswith("!") or text in ["ship", "shipguide", "structure"]:
+                threading.Thread(target=send_unknown_dm, args=(user_id,)).start()
 
     return jsonify({"status": "ok"}), 200
