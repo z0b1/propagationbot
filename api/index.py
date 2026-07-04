@@ -45,7 +45,55 @@ def send_welcome_message(user_id, channel_id):
         )
     except SlackApiError as e:
         print(f"Error sending message: {e.response['error']}")
-@app.route("/", methods=["POST"])
+def send_help_dm(user_id):
+    try: 
+        dm = user_client.conversations_open(users=user_id)
+        dm_channel_id = dm["channel"]["id"]
+        user_client.chat_postMessage(
+            channel=dm_channel_id,
+            text="Hiya, I am Propagation bot! Here's the Propagation help guide!",
+            blocks=[
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Propagation Commands",
+                        "emoji": True,
+                    },
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": (
+                            "Here's what I can do:\n\n"
+                            "- `help`: Sends you this guide.\n"
+                            "- `rsvp`: Sends you the website link\n"
+                            "- `ship`: Sends you the link to ship your project\n"
+                            "- `shipguide`: Sends you the link to the shipping guide\n"
+                            "- `structure`: Sends you the link to the starstruct app which automatically checks if your folders are structured properly\n"
+                            "Have fun building and shipping your project! If you have any questions, feel free to reach out to the Propagation team."
+                        ),
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "text": "Visit our website",
+                            },
+                            "url": rsvpl,
+                        }
+                    ],
+                },
+            ],
+        )
+        
+    except SlackApiError as e:
+        print(f"Error sending DM: {e.response['error']}")
 @app.route("/", methods=["GET", "POST"])  
 
 def slack_events():
